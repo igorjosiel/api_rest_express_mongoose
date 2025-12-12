@@ -1,5 +1,5 @@
 import NotFound from "../errors/NotFound.js";
-import { books } from "../models/index.js";
+import { authors, books } from "../models/index.js";
 
 class BookController {
   static getBooks = async (req, res, next) => {
@@ -75,17 +75,47 @@ class BookController {
     }
   };
 
-  static getBooksByPublisher = async (req, res, next) => {
+  static getBooksByFilter = async (req, res, next) => {
     try {
-      const publisher = req.query.publisher;
+      const search = await handleSearch(req.query);
 
-      const booksFound = await books.find({ publisher });
+      if (search !== null) {
+        const booksFound = await books.find(search).populate("author");
 
-      res.status(200).send(booksFound);
+        res.status(200).send(booksFound);
+      } else {
+        res.status(200).send([]);
+      }
     } catch (error) {
       next(error);
     }
   };
+}
+
+async function handleSearch(params) {
+  const { publisher, title, minPaginas, maxPaginas, nomeAutor } = params;
+
+  let search = {};
+
+  if (publisher) search.publisher = publisher;
+  if (title) search.title = { $regex: title, $options: "i" };
+
+  if (minPaginas || maxPaginas) search.pages = {};
+
+  if (minPaginas) search.pages.$gte = minPaginas;
+  if (maxPaginas) search.pages.$lte = maxPaginas;
+
+  if (nomeAutor) {
+    const author = await authors.findOne({ name: nomeAutor });
+
+    if (author !== null) {
+      search.author = author._id;
+    } else {
+      search = null;
+    }
+  }
+
+  return search;
 }
 
 export default BookController;
