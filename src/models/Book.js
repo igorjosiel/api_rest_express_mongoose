@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import autopopulate from "mongoose-autopopulate";
 
 const bookSchema = new mongoose.Schema({
   id: { type: String },
@@ -10,6 +11,7 @@ const bookSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "authors",
     required: [true, "O(a) autor(a) é obrigatório."],
+    autopopulate: { select: "name" },
   },
   price: { type: Number },
   publisher: {
@@ -26,10 +28,13 @@ const bookSchema = new mongoose.Schema({
       validator: (value) => {
         return value >= 10 && value <= 5000;
       },
-      message: "O número de páginas deve estar entre 10 e 5000. Valor fornecido: {VALUE}."
+      message:
+        "O número de páginas deve estar entre 10 e 5000. Valor fornecido: {VALUE}.",
     },
   },
 });
+
+bookSchema.plugin(autopopulate);
 
 const books = mongoose.model("books", bookSchema);
 

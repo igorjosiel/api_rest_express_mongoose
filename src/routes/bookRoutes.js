@@ -1,11 +1,12 @@
 import express from "express";
 import BookController from "../controllers/bookController.js";
+import paginate from "../middlewares/paginate.js";
 
 const router = express.Router();
 
 router
-  .get("/livros", BookController.getBooks)
-  .get("/livros/busca", BookController.getBooksByFilter)
+  .get("/livros", BookController.getBooks, paginate)
+  .get("/livros/busca", BookController.getBooksByFilter, paginate)
   .get("/livros/:id", BookController.getBookById)
   .post("/livros", BookController.createBook)
   .put("/livros/:id", BookController.updateBook)

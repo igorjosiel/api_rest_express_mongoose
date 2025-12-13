@@ -2,11 +2,13 @@ import NotFound from "../errors/NotFound.js";
 import { authors, books } from "../models/index.js";
 
 class BookController {
-  static getBooks = async (req, res, next) => {
+  static getBooks = (req, res, next) => {
     try {
-      const booksFound = await books.find().populate("author").exec();
+      const getBooks = books.find();
 
-      res.status(200).json(booksFound);
+      req.result = getBooks;
+
+      next();
     } catch (error) {
       next(error);
     }
@@ -18,7 +20,6 @@ class BookController {
 
       const bookFound = await books
         .findById(id)
-        .populate("author", "name")
         .exec();
 
       if (bookFound !== null) {
@@ -80,9 +81,11 @@ class BookController {
       const search = await handleSearch(req.query);
 
       if (search !== null) {
-        const booksFound = await books.find(search).populate("author");
+        const booksFound = books.find(search);
 
-        res.status(200).send(booksFound);
+        req.result = booksFound;
+
+        next();
       } else {
         res.status(200).send([]);
       }
